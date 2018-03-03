@@ -1,3 +1,5 @@
 # Robocup2018_Line
-
-Matias
+int ana;
+int pablo;
+int mauri;
+int matias;
