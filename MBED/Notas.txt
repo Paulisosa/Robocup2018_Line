@@ -1,0 +1,9 @@
+- Para abrir algun proyecto platformIo, hay que copiar la carpeta 
+  del proyecto en la direccion: PlatformIO\Projects
+
+- Para leer el serial hay que descargar Termite: 
+	https://www.compuphase.com/software_termite.htm
+
+- Libreria usada para programar con los sensores HCSR04: 
+	https://os.mbed.com/users/antoniolinux/code/HCSR04/docs/tip/
+
