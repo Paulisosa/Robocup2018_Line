@@ -1,28 +1,22 @@
-/*
-  Codigo de testeo de sensores CNY70:
-
-  Colocar todos los sensores a testear debajo
-  de un objeto de color blanco. Asegurarse de que
-  llega luz y que las conexiones sean correctas.
-*/
-
 #include <mbed.h>
+#include <mcp3208.h>
 
-const int blanco = 200; //valor obtenido con el proyecto calibracion_color_blanco
-const int num_sensores = 6; //numero de sensores a testear
+SPI device(PTD2,PTD3,PTD1);
+MCP3208 mcp(device,PTD0);
 Serial pc(USBTX, USBRX);
-AnalogIn sensores_color[num_sensores] = {A0,A1,A2,A3,A4,A5}; //colocar los pines necesarios
+
+const int NUM_CNY70 = 7;
+int canales_cny70[NUM_CNY70] = {0,1,2,3,4,5,6};
 
 int main() {
     while(1) {
-      for(int i = 0; i < num_sensores; i++)
+      for(int i = 0; i < NUM_CNY70; i++)
       {
-        if(sensores_color[i].read() >= 200)
-          pc.printf("Sensor %d: lee blanco\n", i+1);
-        else
-          pc.printf("Sensor %d: no lee blanco\n", i+1);
+        float lectura = mcp.read_input(canales_cny70[i]);
+        pc.printf("Lectura sensor %i:", i);
+        pc.printf("%f\n",lectura);
       }
-      pc.printf("------------------------\n");
-      wait(1.0);
+      pc.printf("-----------------------\n");
+      wait(2.0);
     }
 }
