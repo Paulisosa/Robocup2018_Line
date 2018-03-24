@@ -4,10 +4,8 @@
 
 #include "mbed.h"
 
-
 #ifndef MCP3208_H
 #define MCP3208_H
-
 
 /** Polarity setting for differential inputs.
  *
@@ -43,6 +41,8 @@ public:
      * @param returns The sampled value as a float between 0.0 and 1.0.
      */
     float read_input(int channel);
+
+    int read_int_input(int channel);
 
     /** Read from a pair of differential inputs.
      *

@@ -38,6 +38,25 @@ float MCP3208::read_input(int channel)
     return ((float)conv_result) / 4096;
 }
 
+int MCP3208::read_int_input(int channel)
+{
+    int command_high = START_BIT | MODE_SINGLE | ((channel & 0x04) >> 2);
+    int command_low = (channel & 0x03) << 6;
+
+    select();
+
+    // Odd writing requirements, see the datasheet for details
+    m_bus.write(command_high);
+    int high_byte = m_bus.write(command_low) & 0x0F;
+    int low_byte = m_bus.write(0);
+
+    deselect();
+
+    int conv_result = (high_byte << 8) | low_byte;
+
+    return (conv_result);
+}
+
 
 float MCP3208::read_diff_input(int channel, Polarity polarity)
 {
