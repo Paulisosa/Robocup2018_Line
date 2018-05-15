@@ -6,7 +6,8 @@
 	const int32_t dis_sensor[] = { -DIS2 - 10, -DIS1 - 10, -DIS0 - 10, DIS0, DIS1, DIS2 };
 #endif
 
-float obtenerError(int32_t array_value[]) {
+float obtenerError(int32_t array_value[]) 
+{
 	int32_t sum_sen = 0;
 	int32_t sum = 0;
 	int32_t dis = 0;
@@ -25,7 +26,7 @@ float obtenerError(int32_t array_value[]) {
 
 	dis = sum / sum_sen;
 
-	if (sum_sen > 7300) 
+	if (sum_sen > 10000) 
 	{
 		if (delta > 0.)
 			delta = 1.;
@@ -39,7 +40,7 @@ float obtenerError(int32_t array_value[]) {
 	return delta;
 }
 
-void motorSpeed(float pwm, MotorDC &m_izq, MotorDC &m_der) 
+void motorSpeed(float pwm, MotorDC &m_izq, MotorDC &m_der, float velMaxima)
 {
 	float pwm_der, pwm_izq;
 
@@ -51,39 +52,39 @@ void motorSpeed(float pwm, MotorDC &m_izq, MotorDC &m_der)
 
 	if (pwm > 0.0) //Girar a la izquierda
 	{					
-		m_der.setSpeed(PWM_MAX_DER);
+		m_der.setSpeed(velMaxima);
 
 		if (pwm <= 0.5) 
 		{
-			pwm_izq = PWM_MAX_IZQ - 2 * pwm * (PWM_MAX_IZQ - PWM_MIN_IZQ);
+			pwm_izq = velMaxima - 2 * pwm * (velMaxima - 0.1f);
 			m_izq.setSpeed(pwm_izq);
 		} 
 		else 
 		{
-			pwm_izq = PWM_MIN_IZQ + 2 * (pwm - 0.5) * (PWM_MAX_IZQ - PWM_MIN_IZQ);
+			pwm_izq = 0.1f + 2 * (pwm - 0.5) * (velMaxima - 0.1f);
 			m_izq.setSpeed(-pwm_izq);
 		}
 	} 
 	else if (pwm < 0.0) // Girar a la derecha
 	{		
-		m_izq.setSpeed(PWM_MAX_IZQ);
+		m_izq.setSpeed(velMaxima);
 		pwm = -pwm;
 
 		if (pwm <= 0.5) 
 		{
-			pwm_der = PWM_MAX_DER - 2 * pwm * (PWM_MAX_DER - PWM_MIN_DER);
+			pwm_der = velMaxima - 2 * pwm * (velMaxima  - 0.1f);
 			m_der.setSpeed(pwm_der);
 		} 
 		else 
 		{
-			pwm_der = PWM_MIN_DER + 2 * (pwm - 0.5) * (PWM_MAX_DER - PWM_MIN_DER);
+			pwm_der = 0.1f + 2 * (pwm - 0.5) * (velMaxima - 0.1f);
 			m_der.setSpeed(-pwm_der);
 		}
 	} 
 	else //Ir derecho
 	{							
-		m_izq.setSpeed(PWM_MAX_IZQ);
-		m_der.setSpeed(PWM_MAX_DER);
+		m_izq.setSpeed(velMaxima);
+		m_der.setSpeed(velMaxima);
 	}
 }
 
@@ -91,8 +92,8 @@ void motorSpeed(float pwm, MotorDC &m_izq, MotorDC &m_der)
 //Proporcional = posicion actual - posicion deseada
 //Integral = sumatoria de errores acumulados 
 //Velocidad de motores = kp * Derivativo + ki * Integral + kd * Derivativo
-void seguirLineaPID(int32_t line_array[], float kp, float kd, float ki, VariablesPID& vp,
-	MotorDC &m_izq, MotorDC &m_der)
+void seguirLineaPID(int32_t line_array[], VariablesPID& vp,
+					MotorDC &m_izq, MotorDC &m_der, float velMaxima)
 {
 	vp.errorDerivada = -vp.errorProporcional;
 	vp.errorProporcional = obtenerError(line_array);
@@ -103,6 +104,7 @@ void seguirLineaPID(int32_t line_array[], float kp, float kd, float ki, Variable
 	if (vp.errorIntegral > 0.01) vp.errorIntegral = 0.01;
 	if (vp.errorIntegral < -0.01) vp.errorIntegral = -0.01;
 
-	float vel = kp * vp.errorProporcional + kd * vp.errorDerivada * vp.idt + ki * vp.errorIntegral;
-	motorSpeed(vel, m_izq, m_der);
+	float pwm = vp.kp * vp.errorProporcional + vp.kd * vp.errorDerivada * 
+				vp.idt + vp.ki * vp.errorIntegral;
+	motorSpeed(pwm, m_izq, m_der, velMaxima);
 }
